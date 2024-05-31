@@ -6,7 +6,7 @@ import Details from "./Components/Details";
 import Login from "./Components/login";
 
 function App() {
-  const user = true;
+  const user = 0;
 
   return (
     <Flex
