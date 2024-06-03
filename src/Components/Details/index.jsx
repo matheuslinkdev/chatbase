@@ -11,6 +11,7 @@ import {
 import { SlArrowDown, SlArrowUp } from "react-icons/sl";
 import { BsDownload } from "react-icons/bs";
 import { useState } from "react";
+import { auth } from "../../lib/firebase";
 
 const Details = () => {
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
@@ -114,6 +115,7 @@ const Details = () => {
         color="common.100"
         bgColor="red.300"
         _hover={{ bgColor: "red.400" }}
+        onClick={()=> auth.signOut()}
       >
         Logout
       </Button>

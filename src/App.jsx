@@ -1,12 +1,30 @@
 import { Flex, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import List from "./Components/List";
 import Chat from "./Components/Chat";
 import Details from "./Components/Details";
 import Login from "./Components/login";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./lib/firebase";
+import { create } from "zustand";
+import { useUserStore } from "./lib/userStore";
 
 function App() {
-  const user = 0;
+  const { currentUser, isLoading, fetchUserInfo } = useUserStore();
+
+  useEffect(() => {
+    const unSub = onAuthStateChanged(auth, (user) => {
+      fetchUserInfo(user?.uid)
+    });
+
+    return () => {
+      unSub();
+    };
+  }, [fetchUserInfo]);
+
+  console.log(currentUser)
+
+  if(isLoading) return <Flex>Loading ...</Flex>
 
   return (
     <Flex
@@ -16,14 +34,14 @@ function App() {
       border="2px solid var(--chakra-colors-blue-900)"
       borderRadius={10}
     >
-      {user ? (
+      {currentUser ? (
         <>
           <List />
           <Chat />
           <Details />
         </>
       ) : (
-        <Login/>
+        <Login />
       )}
     </Flex>
   );

@@ -8,14 +8,21 @@ import {
   Spacer,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../lib/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth, db } from "../../lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import upload from "../../lib/uploads";
 
 const Login = () => {
   const [avatar, setAvatar] = useState({
     file: null,
     url: "",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleAvatar = (e) => {
     if (e.target.files[0]) {
@@ -26,21 +33,49 @@ const Login = () => {
     }
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.target);
+    const { email, password } = Object.fromEntries(formData);
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      alert(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     const formData = new FormData(e.target);
     const { username, email, password } = Object.fromEntries(formData);
     console.log(username);
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      const imgUrl = await upload(avatar.file);
+
+      await setDoc(doc(db, "users", res.user.uid), {
+        username,
+        email,
+        avatar: imgUrl,
+        id: res.user.uid,
+        blocked: [],
+      });
+
+      await setDoc(doc(db, "userchats", res.user.uid), {
+        chats: [],
+      });
+
+      alert("Account Created!");
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,7 +87,9 @@ const Login = () => {
           <Input type="email" name="email" />
           <FormLabel>Your Password:</FormLabel>
           <Input type="password" name="password" />
-          <Button type="submit">Sign In</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Loading" : "Sign In"}
+          </Button>
         </form>
       </Box>
 
@@ -69,7 +106,9 @@ const Login = () => {
           <Input type="email" name="email" />
           <FormLabel>Enter a Password:</FormLabel>
           <Input type="password" name="password" />
-          <Button type="submit">Sign Up</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Loading" : "Sign Up"}
+          </Button>
         </form>
       </Box>
     </Flex>
