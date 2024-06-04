@@ -22,8 +22,6 @@ function App() {
     };
   }, [fetchUserInfo]);
 
-  console.log(currentUser)
-
   if(isLoading) return <Flex>Loading ...</Flex>
 
   return (

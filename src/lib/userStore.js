@@ -21,9 +21,6 @@ const useUserStore = create((set) => ({
       alert(err);
       return set({ currentUser: null, isLoading: false });
     } 
-    finally {
-
-    }
   },
 }));
 
