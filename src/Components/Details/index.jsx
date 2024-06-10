@@ -11,14 +11,52 @@ import {
 import { SlArrowDown, SlArrowUp } from "react-icons/sl";
 import { BsDownload } from "react-icons/bs";
 import { useState } from "react";
-import { auth } from "../../lib/firebase";
+import { auth, db } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
+import { useUserStore } from "../../lib/userStore";
+import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 
 const Details = () => {
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
 
+   const {
+     chatId,
+     user,
+     isCurrentUserBlocked,
+     isReceiverBlocked,
+     changeBlock,
+     resetChat,
+   } = useChatStore();
+   const { currentUser } = useUserStore();
+
+   const handleBlock = async () => {
+     if (!user) return;
+
+     const userDocRef = doc(db, "users", currentUser.id);
+
+     try {
+       await updateDoc(userDocRef, {
+         blocked: isReceiverBlocked
+           ? arrayRemove(user.id)
+           : arrayUnion(user.id),
+       });
+       changeBlock();
+     } catch (err) {
+       console.log(err);
+     }
+   };
+
+ 
+
   return (
     <Flex flex={1} flexDir="column">
-      <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" p={2}>
+      <Box
+        display="flex"
+        flexDir="column"
+        justifyContent="center"
+        alignItems="center"
+        p={2}
+      >
         <Avatar />
         <Heading size="md">Jane Doe</Heading>
         <Text>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</Text>
@@ -105,19 +143,13 @@ const Details = () => {
         color="common.100"
         bgColor="red.600"
         _hover={{ bgColor: "red.700" }}
+        onClick={handleBlock}
       >
-        Block User
-      </Button>
-      <Button
-        mb={2}
-        mx="auto"
-        width="70%"
-        color="common.100"
-        bgColor="red.300"
-        _hover={{ bgColor: "red.400" }}
-        onClick={()=> auth.signOut()}
-      >
-        Logout
+        {isCurrentUserBlocked
+          ? "You are Blocked!"
+          : isReceiverBlocked
+          ? "User blocked"
+          : "Block User"}
       </Button>
     </Flex>
   );

@@ -1,166 +1,209 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  Center,
-  Flex,
-  Heading,
-  Icon,
-  Image,
-  Input,
-  Text,
-} from "@chakra-ui/react";
-import { FaPhoneAlt, FaInfoCircle } from "react-icons/fa";
-import { BsFillCameraVideoFill } from "react-icons/bs";
-import { RiEmojiStickerLine } from "react-icons/ri";
-import { IoMdSend } from "react-icons/io";
-import { FaImage, FaCamera, FaMicrophone } from "react-icons/fa6";
-
-import EmojiPicker, { Emoji } from "emoji-picker-react";
 import { useEffect, useRef, useState } from "react";
+import "./chat.css";
+import EmojiPicker from "emoji-picker-react";
+import {
+  arrayUnion,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
+import { useUserStore } from "../../lib/userStore";
+import upload from "./../../lib/uploads";
 
 const Chat = () => {
-  const [openPicker, setEmojiPicker] = useState(false);
+  const [chat, setChat] = useState();
+  const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [img, setImg] = useState({
+    file: null,
+    url: "",
+  });
 
-  const endRef = useRef(null)
+  const { currentUser } = useUserStore();
+  const { chatId, user, isCurrentUserBlocked, isReceiverBlocked } =
+    useChatStore();
 
-  useEffect(()=>{
-    endRef.current?.scrollIntoView({behavior: "smooth"})
-  }, [])
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    const unSub = onSnapshot(doc(db, "chats", chatId), (res) => {
+      setChat(res.data());
+    });
+
+    return () => {
+      unSub();
+    };
+  }, [chatId]);
 
   const handleEmoji = (e) => {
     setText((prev) => prev + e.emoji);
+    setOpen(false);
+  };
+
+  const handleImg = (e) => {
+    if (e.target.files[0]) {
+      setImg({
+        file: e.target.files[0],
+        url: URL.createObjectURL(e.target.files[0]),
+      });
+    }
+  };
+
+  const handleSend = async () => {
+    if (text === "") return;
+
+    let imgUrl = null;
+
+    try {
+      if (img.file) {
+        imgUrl = await upload(img.file);
+      }
+
+      await updateDoc(doc(db, "chats", chatId), {
+        messages: arrayUnion({
+          senderId: currentUser.id,
+          text,
+          createdAt: new Date(),
+          ...(imgUrl && { img: imgUrl }),
+        }),
+      });
+
+      const userIDs = [currentUser.id, user.id];
+
+      userIDs.forEach(async (id) => {
+        const userChatsRef = doc(db, "userchats", id);
+        const userChatsSnapshot = await getDoc(userChatsRef);
+
+        if (userChatsSnapshot.exists()) {
+          const userChatsData = userChatsSnapshot.data();
+
+          const chatIndex = userChatsData.chats.findIndex(
+            (c) => c.chatId === chatId
+          );
+
+          userChatsData.chats[chatIndex].lastMessage = text;
+          userChatsData.chats[chatIndex].isSeen =
+            id === currentUser.id ? true : false;
+          userChatsData.chats[chatIndex].updatedAt = Date.now();
+
+          await updateDoc(userChatsRef, {
+            chats: userChatsData.chats,
+          });
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setImg({
+        file: null,
+        url: "",
+      });
+
+      setText("");
+    }
   };
 
   return (
-    <Flex
-      flex={2}
-      borderLeft="1px solid #fff"
-      borderRight="1px solid #fff"
-      flexDir="column"
-      position="relative"
-      overflowY="auto"
-    >
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        p={2}
-      >
-        <Flex alignItems="center">
-          <Avatar />
-          <Flex justifyContent="space-between" flexDir="column" p={2}>
-            <Heading size="md">Jane Doe</Heading>
-            <Text>
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-            </Text>
-          </Flex>
-        </Flex>
-        <Flex gap="10px">
-          <Icon as={FaPhoneAlt} />
-          <Icon as={BsFillCameraVideoFill} />
-          <Icon as={FaInfoCircle} />
-        </Flex>
-      </Box>
-
-      <Box flex={1} px={2} maxW="70%" alignSelf="flex-end">
-        <Text
-          color="common.100"
-          bgColor="picton-blue.950"
-          borderRadius={4}
-          p={1}
-        >
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit.{" "}
-        </Text>
-        <Text>10:16</Text>
-      </Box>
-
-      <Box flex={1} px={2} maxW="70%">
-        <Avatar mb={1} />
-
-        <Text color="common.50" bgColor="cyan.950" borderRadius={4} p={1}>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Possimus
-          architecto ducimus blanditiis dignissimos ab. Corrupti, impedit
-          veritatis, nulla blanditiis a culpa cupiditate sequi saepe obcaecati
-          quo ea illum ipsa reprehenderit!.{" "}
-        </Text>
-        <Text>10:17</Text>
-      </Box>
-
-      <Box flex={1} px={2} maxW="70%" alignSelf="flex-end">
-        <Text
-          color="common.100"
-          bgColor="picton-blue.950"
-          borderRadius={4}
-          p={1}
-        >
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit.{" "}
-        </Text>
-        <Text>10:16</Text>
-      </Box>
-
-      <Box flex={1} px={2} maxW="70%">
-        <Avatar mb={1} />
-
-        <Text color="common.50" bgColor="cyan.950" borderRadius={4} p={1}>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Possimus
-          architecto ducimus blanditiis dignissimos ab. Corrupti, impedit
-          veritatis, nulla blanditiis a culpa cupiditate sequi saepe obcaecati
-          quo ea illum ipsa reprehenderit!.{" "}
-        </Text>
-        <Text>10:17</Text>
-      </Box>
-
-      <Box flex={1} px={2} maxW="70%" alignSelf="flex-end">
-        <Image src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0f/ba/29/5c/img-worlds-of-adventure.jpg?w=1200&h=1200&s=1" h="auto" w="100%" objectFit="cover" borderRadius={5} mb={1}/>
-        <Text
-          color="common.100"
-          bgColor="picton-blue.950"
-          borderRadius={4}
-          p={1}
-        >
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit.{" "}
-        </Text>
-        <Text>10:16</Text>
-      </Box>
-
-      <Box ref={endRef}>
-
-      </Box>
-
-      <Box alignItems="center" mt="auto" px={10} py={2}>
-        <Flex alignItems="center">
-          <Flex gap={2} p={1}>
-            <Icon as={FaImage} />
-            <Icon as={FaCamera} />
-            <Icon as={FaMicrophone} />
-          </Flex>
-          <Input
-            placeholder="Type a message..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-          <Flex ml={1}>
-            <Icon
-              as={RiEmojiStickerLine}
-              onClick={() => setEmojiPicker(!openPicker)}
+    <div className="chat">
+      <div className="top">
+        <div className="user">
+          <img src={user?.avatar || "./avatar.png"} alt="" />
+          <div className="texts">
+            <span>{user?.username}</span>
+            <p>Lorem ipsum dolor, sit amet.</p>
+          </div>
+        </div>
+        <div className="icons">
+          <img src="./phone.png" alt="" />
+          <img src="./video.png" alt="" />
+          <img src="./info.png" alt="" />
+        </div>
+      </div>
+      <div className="center">
+        {chat?.messages?.map((message) => (
+          <div
+            className={
+              message.senderId === currentUser?.id ? "message own" : "message"
+            }
+            key={message?.createAt}
+          >
+            <div className="texts">
+              {message.img && <img src={message.img} alt="" />}
+              <p>{message.text}</p>
+              {/* <span>{format(message.createdAt.toDate())}</span> */}
+            </div>
+          </div>
+        ))}
+        {img.url && (
+          <div className="message own">
+            <div className="texts">
+              <img src={img.url} alt="" />
+            </div>
+          </div>
+        )}
+        <div ref={endRef}></div>
+      </div>
+      <div className="bottom">
+        <div className="icons">
+          <label htmlFor="file">
+            <img
+              src="./img.png"
+              alt=""
+              style={{
+                cursor:
+                  isCurrentUserBlocked || isReceiverBlocked
+                    ? "not-allowed"
+                    : "pointer",
+              }}
             />
-            <Box position="relative">
-              {openPicker && (
-                <EmojiPicker
-                  onEmojiClick={handleEmoji}
-                  style={{ position: "absolute", bottom: "50px", left: 0 }}
-                />
-              )}
-            </Box>
-          </Flex>
-          <Button bg="none" _hover={{ bg: "none" }}>
-            <Icon as={IoMdSend} />
-          </Button>
-        </Flex>
-      </Box>
-    </Flex>
+          </label>
+          <input
+            type="file"
+            id="file"
+            style={{ display: "none" }}
+            onChange={handleImg}
+            disabled={isCurrentUserBlocked || isReceiverBlocked}
+          />
+          <img src="./camera.png" alt="" />
+          <img src="./mic.png" alt="" />
+        </div>
+        <input
+          type="text"
+          placeholder={
+            isCurrentUserBlocked || isReceiverBlocked
+              ? "You cannot send a message"
+              : "Type a message..."
+          }
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          disabled={isCurrentUserBlocked || isReceiverBlocked}
+        />
+        <div className="emoji">
+          <img
+            src="./emoji.png"
+            alt=""
+            onClick={() => setOpen((prev) => !prev)}
+          />
+          <div className="picker">
+            <EmojiPicker open={open} onEmojiClick={handleEmoji} />
+          </div>
+        </div>
+        <button
+          className="sendButton"
+          onClick={handleSend}
+          disabled={isCurrentUserBlocked || isReceiverBlocked}
+        >
+          Send
+        </button>
+      </div>
+    </div>
   );
 };
 
