@@ -1,22 +1,21 @@
-import { Flex, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { Flex } from "@chakra-ui/react";
+import { useEffect } from "react";
 import List from "./Components/List";
 import Chat from "./Components/Chat";
 import Details from "./Components/Details";
 import Login from "./Components/login";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase";
-import { create } from "zustand";
 import { useUserStore } from "./lib/userStore";
 import { useChatStore } from "./lib/chatStore";
 
 function App() {
   const { currentUser, isLoading, fetchUserInfo } = useUserStore();
-  const { chatId } = useChatStore()
+  const { chatId } = useChatStore();
 
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, (user) => {
-      fetchUserInfo(user?.uid)
+      fetchUserInfo(user?.uid);
     });
 
     return () => {
@@ -24,7 +23,7 @@ function App() {
     };
   }, [fetchUserInfo]);
 
-  if(isLoading) return <Flex>Loading ...</Flex>
+  if (isLoading) return <Flex>Loading ...</Flex>;
 
   return (
     <Flex

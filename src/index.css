@@ -1,9 +1,9 @@
-*{
+* {
   color: var(--chakra-colors-common-100);
   font-family: "Nunito";
 }
 
-svg{
+svg {
   font-size: 22px;
   cursor: pointer;
 }

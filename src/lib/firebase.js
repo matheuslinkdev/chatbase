@@ -22,3 +22,6 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth();
 export const db = getFirestore();
 export const storage = getStorage();
+
+//exporting it just to avoid vercel error
+export const appFn = app;

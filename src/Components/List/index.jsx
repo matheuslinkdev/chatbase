@@ -1,14 +1,14 @@
-import { Flex } from "@chakra-ui/react"
-import UserInfo from "./UserInfo"
-import ChatList from "./ChatList"
+import { Flex } from "@chakra-ui/react";
+import UserInfo from "./UserInfo";
+import ChatList from "./ChatList";
 
 const List = () => {
   return (
     <Flex flex={1} flexDir="column">
-      <UserInfo/>
-      <ChatList/>
+      <UserInfo />
+      <ChatList />
     </Flex>
-  )
-}
+  );
+};
 
-export default List
+export default List;

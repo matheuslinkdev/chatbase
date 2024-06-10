@@ -1,5 +1,13 @@
-import { Avatar, Button, Flex, Heading, Icon, Input, Text } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import {
+  Avatar,
+  Button,
+  Flex,
+  Heading,
+  Icon,
+  Input,
+  Text,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import AddUser from "./AddUser";
@@ -11,7 +19,7 @@ import { useChatStore } from "../../../lib/chatStore";
 const ChatList = () => {
   const [addMode, setAddMode] = useState(false);
   const [chats, setChats] = useState([]);
-    const [input, setInput] = useState("");
+  const [input, setInput] = useState("");
 
   const { currentUser } = useUserStore();
   const { changeChat, resetChat } = useChatStore();
@@ -68,14 +76,14 @@ const ChatList = () => {
     }
   };
 
-    const filteredChats = chats.filter((c) =>
-      c.user.username.toLowerCase().includes(input.toLowerCase())
-    );
+  const filteredChats = chats.filter((c) =>
+    c.user.username.toLowerCase().includes(input.toLowerCase())
+  );
 
-        const handleLogout = () => {
-          auth.signOut();
-          resetChat();
-        };
+  const handleLogout = () => {
+    auth.signOut();
+    resetChat();
+  };
 
   return (
     <Flex flexDir="column" flex={1} overflowY="auto" p={2}>

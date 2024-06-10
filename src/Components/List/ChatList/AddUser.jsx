@@ -81,14 +81,14 @@ const AddUser = () => {
         }),
       });
 
-       await updateDoc(doc(userChatsRef, currentUser.id), {
-         chats: arrayUnion({
-           chatId: newChatRef.id,
-           lastMessage: "",
-           receiverId: user.id,
-           updatedAt: Date.now(),
-         }),
-       });
+      await updateDoc(doc(userChatsRef, currentUser.id), {
+        chats: arrayUnion({
+          chatId: newChatRef.id,
+          lastMessage: "",
+          receiverId: user.id,
+          updatedAt: Date.now(),
+        }),
+      });
 
       // Set the log message
       setLogMessage(`User ${user.username} has been added.`);

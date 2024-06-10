@@ -11,7 +11,7 @@ import {
 import { SlArrowDown, SlArrowUp } from "react-icons/sl";
 import { BsDownload } from "react-icons/bs";
 import { useState } from "react";
-import { auth, db } from "../../lib/firebase";
+import { db } from "../../lib/firebase";
 import { useChatStore } from "../../lib/chatStore";
 import { useUserStore } from "../../lib/userStore";
 import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
@@ -19,34 +19,24 @@ import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 const Details = () => {
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
 
-   const {
-     chatId,
-     user,
-     isCurrentUserBlocked,
-     isReceiverBlocked,
-     changeBlock,
-     resetChat,
-   } = useChatStore();
-   const { currentUser } = useUserStore();
+  const { user, isCurrentUserBlocked, isReceiverBlocked, changeBlock } =
+    useChatStore();
+  const { currentUser } = useUserStore();
 
-   const handleBlock = async () => {
-     if (!user) return;
+  const handleBlock = async () => {
+    if (!user) return;
 
-     const userDocRef = doc(db, "users", currentUser.id);
+    const userDocRef = doc(db, "users", currentUser.id);
 
-     try {
-       await updateDoc(userDocRef, {
-         blocked: isReceiverBlocked
-           ? arrayRemove(user.id)
-           : arrayUnion(user.id),
-       });
-       changeBlock();
-     } catch (err) {
-       console.log(err);
-     }
-   };
-
- 
+    try {
+      await updateDoc(userDocRef, {
+        blocked: isReceiverBlocked ? arrayRemove(user.id) : arrayUnion(user.id),
+      });
+      changeBlock();
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <Flex flex={1} flexDir="column">
