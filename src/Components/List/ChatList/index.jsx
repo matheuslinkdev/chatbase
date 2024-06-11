@@ -29,7 +29,7 @@ const ChatList = () => {
       doc(db, "userchats", currentUser.id),
       async (res) => {
         const items = res.data().chats;
-        console.log(res.data());
+      
 
         const promises = items.map(async (item) => {
           const userDocRef = doc(db, "users", item.receiverId);
@@ -41,8 +41,6 @@ const ChatList = () => {
         });
 
         const chatData = await Promise.all(promises);
-        console.log(chatData);
-
         setChats(chatData);
       }
     );

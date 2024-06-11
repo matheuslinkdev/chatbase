@@ -12,6 +12,10 @@ import { db } from "../../lib/firebase";
 import { useChatStore } from "../../lib/chatStore";
 import { useUserStore } from "../../lib/userStore";
 import upload from "./../../lib/uploads";
+import { IoIosMore } from "react-icons/io";
+import { IoCamera, IoImage, IoMic, IoSend, IoVideocam } from "react-icons/io5";
+import { Flex, Icon } from "@chakra-ui/react";
+import { MdEmojiEmotions } from "react-icons/md";
 
 const Chat = () => {
   const [chat, setChat] = useState();
@@ -117,13 +121,11 @@ const Chat = () => {
           <img src={user?.avatar || "./avatar.png"} alt="" />
           <div className="texts">
             <span>{user?.username}</span>
-            <p>Lorem ipsum dolor, sit amet.</p>
           </div>
         </div>
         <div className="icons">
-          <img src="./phone.png" alt="" />
-          <img src="./video.png" alt="" />
-          <img src="./info.png" alt="" />
+          <Icon as={IoVideocam} />
+          <Icon as={IoIosMore} />
         </div>
       </div>
       <div className="center">
@@ -150,11 +152,11 @@ const Chat = () => {
         )}
         <div ref={endRef}></div>
       </div>
-      <div className="bottom">
+      <Flex className="bottom" alignItems="center">
         <div className="icons">
           <label htmlFor="file">
-            <img
-              src="./img.png"
+            <Icon
+              as={IoImage}
               alt=""
               style={{
                 cursor:
@@ -171,8 +173,8 @@ const Chat = () => {
             onChange={handleImg}
             disabled={isCurrentUserBlocked || isReceiverBlocked}
           />
-          <img src="./camera.png" alt="" />
-          <img src="./mic.png" alt="" />
+          <Icon as={IoCamera} />
+          <Icon as={IoMic} />
         </div>
         <input
           type="text"
@@ -186,8 +188,8 @@ const Chat = () => {
           disabled={isCurrentUserBlocked || isReceiverBlocked}
         />
         <div className="emoji">
-          <img
-            src="./emoji.png"
+          <Icon
+            as={MdEmojiEmotions}
             alt=""
             onClick={() => setOpen((prev) => !prev)}
           />
@@ -195,14 +197,16 @@ const Chat = () => {
             <EmojiPicker open={open} onEmojiClick={handleEmoji} />
           </div>
         </div>
-        <button
-          className="sendButton"
-          onClick={handleSend}
-          disabled={isCurrentUserBlocked || isReceiverBlocked}
-        >
-          Send
-        </button>
-      </div>
+   
+          <Icon
+            as={IoSend}
+            onClick={handleSend}
+            disabled={isCurrentUserBlocked || isReceiverBlocked}
+            cursor={isCurrentUserBlocked || isReceiverBlocked ? "not-allowed" : "pointer"}
+            mt="-1"
+          />
+    
+      </Flex>
     </div>
   );
 };

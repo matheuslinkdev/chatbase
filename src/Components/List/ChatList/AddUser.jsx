@@ -36,8 +36,6 @@ const AddUser = () => {
     const formData = new FormData(e.target);
     const username = formData.get("username");
 
-    console.log("Searching for username:", username);
-
     try {
       const userRef = collection(db, "users");
 
@@ -48,7 +46,6 @@ const AddUser = () => {
 
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
-        console.log("User found:", userData);
         setUser(userData);
       } else {
         console.log("No user found with the given username");
@@ -127,11 +124,14 @@ const AddUser = () => {
           p={2}
           justifyContent="space-between"
           zIndex={999999}
-          bgColor="red"
+          bgColor="blue.800"
+          borderRadius="15px"
           mt={4}
         >
           <Avatar src={user.avatar || ""} />
-          <Heading size="md">{user.username}</Heading>
+          <Heading size="md" fontWeight={400}>
+            {user.username}
+          </Heading>
           <Icon as={FaPlus} onClick={handleAdd} />
         </Flex>
       )}
